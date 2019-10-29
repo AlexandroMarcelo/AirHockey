@@ -42,7 +42,7 @@ def main(args):
     state['paddle_max_speed'] = 150
     state['goals'] = {'left': 0, 'right': 0}
     state['is_goal_move'] = None
-    epsilon = 5
+    epsilon = 1
 
     # initiallize gui core
     if 'video_file' in args:
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog=sys.argv[0])
 
     # Optional arguments
-    parser.add_argument("-p1", "--player1", default='player_Q', help="Enter Player1 file url without .py extension")
-    parser.add_argument("-p2", "--player2", default='player_B', help="Enter Player2 file url without .py extension")
+    parser.add_argument("-p1", "--player1", default='player_Z', help="Enter Player1 file url without .py extension")
+    parser.add_argument("-p2", "--player2", default='player_Q', help="Enter Player2 file url without .py extension")
     parser.add_argument("-vf", "--video_file", default=argparse.SUPPRESS, help="Enter video url to save game, use .avi extension")
     parser.add_argument("-sw", "--show_window", default=True, help="Do you want real-time visual feed?")
 
