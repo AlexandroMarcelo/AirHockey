@@ -69,14 +69,22 @@ class Player:
             target = self.initial_pos
 
         else: 
-            if  current_state['puck_speed']['x'] <= 0 and is_puck_behind(self.my_paddle_pos, current_state) == False:
-                enemy_pos = enemy_puck_pos(self.my_goal, current_state)
-                if enemy_pos == 0 and pt_in_roi:
-                    target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': current_state['paddle2_pos']['x'], 'y': current_state['board_shape'][0]}, current_state['puck_radius'],
-                                        current_state['paddle_radius']) 
+            if  current_state['puck_speed']['x'] <= 0
+                if is_puck_behind(self.my_paddle_pos, current_state) == False:
+                    enemy_pos = enemy_puck_pos(self.my_goal, current_state)
+                    if enemy_pos == 0 and pt_in_roi:
+                        target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': current_state['paddle2_pos']['x'], 'y': current_state['board_shape'][0]}, current_state['puck_radius'],
+                                            current_state['paddle_radius']) 
+                    else:
+                        target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': current_state['paddle2_pos']['x'], 'y': 0}, current_state['puck_radius'],
+                                            current_state['paddle_radius'])
                 else:
-                    target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': current_state['paddle2_pos']['x'], 'y': 0}, current_state['puck_radius'],
-                                        current_state['paddle_radius'])
+                    if is_puck_top(current_state):
+                        target = {'x': self.my_goal_center/2, 'y': current_state['board_shape'][0]/4}
+                    else:  
+                        target = {'x': self.my_goal_center/2, 'y': current_state['board_shape'][0]/4*3}
+
+
             else:
                 target = self.initial_pos
         
