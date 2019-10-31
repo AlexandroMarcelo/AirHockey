@@ -30,6 +30,7 @@ class Player:
         self.opponent_goal_center = {}
         self.my_paddle_pos = paddle_pos
         self.initial_pos = {'x': paddle_pos['x'] + 1, 'y': paddle_pos['y']}
+        self.new_initial_pos = {'x': paddle_pos['x'] + 1, 'y': paddle_pos['y']}
         
 
     def next_move(self, current_state):
@@ -57,43 +58,79 @@ class Player:
         path = estimate_path(current_state, self.future_size)
         target = self.initial_pos
 
-
-        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] 
+        roi_radius = current_state['board_shape'][0] * current_state['goal_size'] * 1.2
         pt_in_roi = None
         for p in path:
             if utils.distance_between_points(p[0], self.my_goal_center) < roi_radius:
                 pt_in_roi = p
                 break
         
-        
-
-        #if the puck is in the right field, the paddle defends
-        if is_puck_right(current_state):
-            # get the target position for the paddle
-            target = self.initial_pos
-
-        else: 
-            if  current_state['puck_speed']['x'] <= 50:
-                if is_puck_behind(self.my_paddle_pos, current_state) == False:
-                    target_shot = get_target_shot(enemy_goal_center, self.my_goal_center, current_state)
-                    print(target_shot)
-                    if pt_in_roi:
-                        target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
-                                            current_state['paddle_radius']) 
-                    else:
-                        target = utils.aim(current_state['puck_pos'], current_state['puck_speed'], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
-                                            current_state['paddle_radius'])
-                else:
-                    defense_pos = get_defense_pos(self.my_paddle_pos, current_state)
-                    target = defense_pos
-
-
+        if self.my_goal == 'left':
+            #enemy goals grater than us
+            if current_state['goals']['right'] >= current_state['goals']['left']:
+                self.new_initial_pos = {'x': self.initial_pos['x'] + 200, 'y':self.initial_pos['y']}
             else:
-                target = self.initial_pos
-        
-        # 
-        if target['x'] < (current_state['board_shape'][1] / 2):
-            self.my_paddle_pos = next_move_paddle(self.my_paddle_pos, target, current_state)
+                self.new_initial_pos = self.initial_pos
+            #if the puck is in the right field, the paddle defends
+            if is_puck_right(current_state):
+                # get the target position for the paddle
+                target = self.new_initial_pos
+
+            else: 
+                if  current_state['puck_speed']['x'] <= 50:
+                    if is_puck_behind(self.my_paddle_pos, current_state) == False:
+                        target_shot = get_target_shot(enemy_goal_center, self.my_goal_center, current_state)
+                        #print(target_shot)
+                        if pt_in_roi:
+                            target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
+                                                current_state['paddle_radius']) 
+                        else:
+                            target = utils.aim(current_state['puck_pos'], current_state['puck_speed'], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
+                                                current_state['paddle_radius'])
+                    else:
+                        defense_pos = get_defense_pos(self.my_paddle_pos, current_state)
+                        target = defense_pos
+
+
+                else:
+                    target = self.new_initial_pos
+            
+            # 
+            if target['x'] < (current_state['board_shape'][1] / 2):
+                self.my_paddle_pos = next_move_paddle(self.my_paddle_pos, target, current_state)
+
+        else:
+            #enemy goals grater than us
+            if current_state['goals']['left'] >= current_state['goals']['right']:
+                self.new_initial_pos = {'x': self.initial_pos['x'] - 200, 'y':self.initial_pos['y']}
+            else:
+                self.new_initial_pos = self.initial_pos
+            if is_puck_left(current_state):
+                # get the target position for the paddle
+                target = self.new_initial_pos
+
+            else: 
+                if  current_state['puck_speed']['x'] >= (-50):
+                    if is_puck_behind_right(self.my_paddle_pos, current_state) == False:
+                        target_shot = get_target_shot(enemy_goal_center, self.my_goal_center, current_state)
+                        #print(target_shot)
+                        if pt_in_roi:
+                            target = utils.aim(pt_in_roi[0], pt_in_roi[1], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
+                                                current_state['paddle_radius']) 
+                        else:
+                            target = utils.aim(current_state['puck_pos'], current_state['puck_speed'], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
+                                                current_state['paddle_radius'])
+                    else:
+                        defense_pos = get_defense_pos_right(self.my_paddle_pos, current_state)
+                        target = defense_pos
+
+
+                else:
+                    target = self.new_initial_pos
+            
+            # 
+            if target['x'] > (current_state['board_shape'][1] / 2):
+                self.my_paddle_pos = next_move_paddle(self.my_paddle_pos, target, current_state)
 
         return self.my_paddle_pos
 
@@ -102,6 +139,13 @@ def get_defense_pos(paddle_pos, current_state):
         defense_pos = {'x': paddle_pos['x'] - 10, 'y': paddle_pos['y']}
     else:
         defense_pos = {'x': paddle_pos['x'] - 10, 'y': paddle_pos['y']}
+    return defense_pos
+
+def get_defense_pos_right(paddle_pos, current_state):
+    if is_puck_top(current_state):
+        defense_pos = {'x': paddle_pos['x'] + 10, 'y': paddle_pos['y']}
+    else:
+        defense_pos = {'x': paddle_pos['x'] + 10, 'y': paddle_pos['y']}
     return defense_pos
 
 def get_target_shot(enemy_goal_center, my_goal, current_state):
@@ -150,6 +194,11 @@ def is_puck_behind(paddle_pos, current_state):
         return True
     return False
 
+def is_puck_behind_right(paddle_pos, current_state):
+    if paddle_pos['x'] < current_state['puck_pos']['x']:
+        return True
+    return False
+
 def enemy_puck_pos(my_goal, current_state):
     """
         args:
@@ -190,10 +239,21 @@ def is_puck_right(current_state):
         Return:
             true if the position of the puck is on the right side of the board
     """
-    if current_state['puck_pos']['x'] > (current_state['board_shape'][1]/2 ):
+    if current_state['puck_pos']['x'] > (current_state['board_shape'][1]/2*3 ):
         return True
     return False
 
+def is_puck_left(current_state):
+    """
+        Args: 
+            current_state, to obtain the position of the puck
+
+        Return:
+            true if the position of the puck is on the right side of the board
+    """
+    if current_state['puck_pos']['x'] < (current_state['board_shape'][1]/3 ):
+        return True
+    return False
 
 def next_move_paddle(paddle_pos, target_pos, current_state):
     """
