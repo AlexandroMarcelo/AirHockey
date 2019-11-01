@@ -113,7 +113,7 @@ class Player:
         else:
             #enemy goals grater than us
             if current_state['goals']['left'] >= current_state['goals']['right']:
-                self.new_initial_pos = {'x': self.initial_pos['x'] - 100, 'y':self.initial_pos['y']}
+                self.new_initial_pos = {'x': self.initial_pos['x'] - 50, 'y':self.initial_pos['y']}
             else:
                 self.new_initial_pos = self.initial_pos
             if is_puck_left(current_state):
@@ -142,7 +142,6 @@ class Player:
                             else:
                                 target = utils.aim(current_state['puck_pos'], current_state['puck_speed'], {'x': target_shot['x'], 'y': target_shot['y']}, current_state['puck_radius'],
                                                     current_state['paddle_radius'])
-                            print(target_shot) 
                     else:
                         defense_pos = get_defense_pos_right(self.my_paddle_pos, current_state)
                         target = defense_pos
@@ -176,17 +175,17 @@ def get_target_shot_quarter(enemy_goal_center, my_goal, current_state):
         #shoot down the enemy to the goal edge
         if enemy_pos == 0:
             x1 = current_state['board_shape'][1]
-            y1 = current_state['board_shape'][0]/2 + ((current_state['board_shape'][0] * current_state['goal_size'])/2) - 5
+            y1 = current_state['board_shape'][0]/2 + ((current_state['board_shape'][0] * current_state['goal_size'])/2)
         else:
             x1 = current_state['board_shape'][1]
-            y1 = y1 = current_state['board_shape'][0]/2 - ((current_state['board_shape'][0] * current_state['goal_size'])/2) - 5
+            y1 = y1 = current_state['board_shape'][0]/2 - ((current_state['board_shape'][0] * current_state['goal_size'])/2)
     else:
         if enemy_pos == 0:
             x1 = 0
-            y1 = current_state['board_shape'][0]/2 + ((current_state['board_shape'][0] * current_state['goal_size'])/2) - 5
+            y1 = current_state['board_shape'][0]/2 + ((current_state['board_shape'][0] * current_state['goal_size'])/2)
         else:
             x1 = 0
-            y1 = y1 = current_state['board_shape'][0]/2 - ((current_state['board_shape'][0] * current_state['goal_size'])/2) - 5
+            y1 = y1 = current_state['board_shape'][0]/2 - ((current_state['board_shape'][0] * current_state['goal_size'])/2)
     
     target_shot = {'x': x1, 'y':y1}
     return target_shot
@@ -210,12 +209,13 @@ def get_target_shot(enemy_goal_center, my_goal, current_state):
         dif = current_state['board_shape'][0] - current_state['puck_pos']['y']
         x1 = current_state['puck_pos']['x']
         y1 = current_state['board_shape'][0] + dif
+        y2 = current_state['board_shape'][0]/2 + (((current_state['board_shape'][0] * current_state['goal_size'])/2))
     else:
         x1 = current_state['puck_pos']['x']
         y1 = 0 - current_state['puck_pos']['y']
+        y2 = current_state['board_shape'][0]/2 - (((current_state['board_shape'][0] * current_state['goal_size'])/2))
 
     x2 = enemy_goal_center['x']
-    y2 = enemy_goal_center['y']
 
     m = (y2 - y1)/(x2 - x1)
 
